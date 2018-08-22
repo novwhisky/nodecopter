@@ -93,12 +93,12 @@ ipcMain.on('shiver', () => {
     this.stop();
     this.animateLeds('blinkRed', 10, 1);
     this.clockwise(0.5);
+  }).after(3000, function() {
+    this.stop();
+    this.front(0.2);
   }).after(2000, function() {
     this.stop();
-    this.back(0.15);
-  }).after(2000, function() {
-    this.stop();
-    this.animate('yawDance');
+    this.animate('phiM30Deg');
   }).after(2000, function() {
     this.stop();
     mainWindow.webContents.send('animationDone');
