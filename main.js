@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, ipcMain} = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -58,14 +58,15 @@ var client  = arDrone.createClient();
 
 client.config('control:altitude_max', 3000);
 
+ipcMain.on('startflying', () => {
+  client.takeoff();
+  client
+    .after(5000, function() {
+      this.clockwise(0.5);
+    });
+})
 
-client.takeoff();
-client
-  .after(5000, function() {
-    this.clockwise(0.5);
-  })
-  .after(3000, function() {
-    this.stop();
-    this.land();
-  });
-
+ipcMain.on('stopflying', () => {
+  client.stop();
+  client.land();
+});
