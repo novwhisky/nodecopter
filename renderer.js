@@ -4,8 +4,6 @@
 
 const {ipcRenderer} = require('electron');
 
-console.log(window.FaceDetector);
-
 const start = document.querySelector('input#start')
 
 start.addEventListener('click', () => {
@@ -16,3 +14,25 @@ const stop = document.querySelector('input#stop');
 stop.addEventListener('click', () => {
   ipcRenderer.send('stopflying');
 });
+
+
+ipcRenderer.on('pngdata', (event, data) => {
+  preview.src = data;
+
+  var faceDetector = new FaceDetector({ maxDetectedFaces: 2 });
+  faceDetector.detect(preview)
+    .then(faces => {
+      // faces.forEach(face => console.log(face))
+
+      if(faces.length > 0 /*&& animationRunning === false*/) {
+        console.log(faces.length, faces);
+        // animationRunning = true;
+        ipcRenderer.send('shiver');
+       }
+    })
+    .catch(e => {
+      // console.error("Boo, Face Detection failed: " + e);
+    });
+})
+
+

@@ -13,7 +13,7 @@ function createWindow () {
   mainWindow.loadFile('index.html')
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -36,9 +36,11 @@ app.on('ready', createWindow)
 app.on('window-all-closed', function () {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
+  // if (process.platform !== 'darwin') {
     app.quit()
-  }
+  // }
+
+  pngStream.close();
 })
 
 app.on('activate', function () {
@@ -54,19 +56,62 @@ app.on('activate', function () {
 
 
 var arDrone = require('ar-drone');
-var client  = arDrone.createClient();
+var client  = arDrone.createClient({ frameRate: 1 });
+var pngStream = client.getPngStream();
 
 client.config('control:altitude_max', 3000);
+client.config('general:navdata_demo', 'FALSE');
+
+client.on('batteryChange', function(data) {
+  console.log('Battery ' + data + '%');
+});
 
 ipcMain.on('startflying', () => {
+  pngStream.on('data', data => {
+    if(data) {
+      const img = 'data:image/png;base64,' + data.toString('base64');
+      // console.log(img);
+      mainWindow.webContents.send('pngdata', img);
+    }
+  })
+
+  // FLIGHT STUFF
   client.takeoff();
-  client
-    .after(5000, function() {
-      this.clockwise(0.5);
-    });
+
+  client.after(3000, function() {
+    this.up(0.5);
+
+  }).after(5000, function() {
+    this.stop();
+  });
 })
+
+ipcMain.on('shiver', () => {
+  // client._udpControl.flush();
+
+  client.after(0, function() {
+    this.stop();
+    this.animateLeds('blinkRed', 10, 1);
+    this.clockwise(0.5);
+  }).after(2000, function() {
+    this.stop();
+    this.back(0.15);
+  }).after(2000, function() {
+    this.stop();
+    this.animate('yawDance');
+  }).after(2000, function() {
+    this.stop();
+    // mainWindow.webContents.send('animationDone');
+  });
+});
+
+
+ipcMain.on('runaway', () => {
+  console.log('Run away' )
+});
 
 ipcMain.on('stopflying', () => {
   client.stop();
   client.land();
+
 });
