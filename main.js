@@ -24,6 +24,9 @@ function createWindow () {
   })
 }
 
+// Face detection
+app.commandLine.appendSwitch('enable-experimental-web-platform-features', true);
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -48,3 +51,21 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+
+var arDrone = require('ar-drone');
+var client  = arDrone.createClient();
+
+client.config('control:altitude_max', 3000);
+
+
+client.takeoff();
+client
+  .after(5000, function() {
+    this.clockwise(0.5);
+  })
+  .after(3000, function() {
+    this.stop();
+    this.land();
+  });
+
