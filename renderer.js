@@ -6,6 +6,8 @@ const {ipcRenderer} = require('electron');
 
 const start = document.querySelector('input#start')
 
+let animationRunning = false;
+
 start.addEventListener('click', () => {
   ipcRenderer.send('startflying');
 })
@@ -15,6 +17,9 @@ stop.addEventListener('click', () => {
   ipcRenderer.send('stopflying');
 });
 
+ipcRenderer.on('animationDone', () => {
+  animationRunning = false;
+})
 
 ipcRenderer.on('pngdata', (event, data) => {
   preview.src = data;
@@ -22,11 +27,11 @@ ipcRenderer.on('pngdata', (event, data) => {
   var faceDetector = new FaceDetector({ maxDetectedFaces: 2 });
   faceDetector.detect(preview)
     .then(faces => {
-      // faces.forEach(face => console.log(face))
-
-      if(faces.length > 0 /*&& animationRunning === false*/) {
+      if(faces.length)
         console.log(faces.length, faces);
-        // animationRunning = true;
+
+      if(faces.length > 0 && animationRunning === false) {
+        animationRunning = true;
         ipcRenderer.send('shiver');
        }
     })

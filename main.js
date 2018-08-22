@@ -101,7 +101,7 @@ ipcMain.on('shiver', () => {
     this.animate('yawDance');
   }).after(2000, function() {
     this.stop();
-    // mainWindow.webContents.send('animationDone');
+    mainWindow.webContents.send('animationDone');
   });
 });
 
